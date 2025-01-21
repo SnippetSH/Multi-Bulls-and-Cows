@@ -73,9 +73,6 @@
   }
 
   function onSend() {
-    // 전송 로직
-    // 여기서 temp에 Data를 추가
-
     if (socket.readyState === WebSocket.OPEN) {
       const boxNumbers = boxes.map(box => box.number);
       if (boxNumbers.includes(-1)) {
@@ -211,7 +208,7 @@
     display: block;
     position: absolute;
     bottom: 0;
-    left: 0%;  /* right로만 바꿔주면 오 - 왼 */
+    left: 0%; 
     background-color: #666;
     width: 0;
     height: 2px;
