@@ -101,6 +101,6 @@ function newGame() {
   console.log(game);
 }
 
-server.listen(3000, () => {
+server.listen(3000, '0.0.0.0', () => {
   console.log('Server is running on http://localhost:3000');
 })
