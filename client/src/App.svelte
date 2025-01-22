@@ -36,35 +36,44 @@
   const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
   const host = window.location.host;
 
+  let isSocketOpened = false;
+
   onMount(() => {
     initStore();
 
     socket = new WebSocket(`${wsProtocol}://${host}`);
     socket.onopen = () => {
       console.log("Connected");
+      isSocketOpened = true;
+      window.dispatchEvent(new Event('wsopen'));
     };
 
-    socket.onmessage = (event) => {
-      const data: ServerData = JSON.parse(event.data);
-      // console.log(data);
-      if (!data) return;
-
-      if (data.type === "links") {
-        currentUser = data.data.links;
-      } else if (data.type === "score") {
-        data.data.id = datas.length;
-        gameResult.set([...datas, data]);
-
-        if (data.data.strike === 9) {
-          isWin = true;
-          
-          setTimeout(() => {
-            isWin = false;
-            initStore();
-          }, 1000) 
+    window.addEventListener('wsopen', () => {
+      socket.onmessage = (event) => {
+        const data: ServerData = JSON.parse(event.data);
+        // console.log(data);
+        if (!data) return;
+  
+        if (data.type === "links") {
+          currentUser = data.data.links;
+        } else if (data.type === "score") {
+          data.data.id = datas.length;
+          gameResult.set([...datas, data]);
+  
+          if (data.data.strike === 9) {
+            isWin = true;
+            
+            setTimeout(() => {
+              isWin = false;
+              initStore();
+            }, 1000) 
+          }
+        } else if (data.type === "bulkscore") {
+          gameResult.set(data.data.map((d, i) => ({ type: 'score', data: { ...d, id: i } })));
         }
-      }
-    };
+      };
+    }, false);
+
 
     return () => {
       socket.close();

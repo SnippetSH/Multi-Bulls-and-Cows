@@ -4,9 +4,21 @@ import { createServer } from 'http';
 import ws from 'ws';
 import cors from 'cors';
 
-import type { ScoreData, LinkData, ClientData } from './types';
+import type { ScoreData, LinkData, BulkScoreData, ClientData, InnerData } from './types';
 
 let game = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+function newGame() {
+  game = [];
+  for (let i = 0; i < 9; i++) {
+    let num = Math.floor(Math.random() * 10);
+    while (game.includes(num)) num = Math.floor(Math.random() * 10);
+    game.push(num);
+  }
+
+  console.log(game);
+}
+
+let scores: InnerData[] = [];
 let sockets: Array<ws & { id: string | undefined }> = [];
 
 const app = express();
@@ -34,6 +46,12 @@ wss.on('connection', (_ws, req) => {
   ws.id = req.headers['sec-websocket-key'];
   sockets.push(ws);
   console.log("현재 연결된 소켓 수: " + sockets.length);
+  console.log(game);
+  const bulkScoreData: BulkScoreData = {
+    type: 'bulkscore',
+    data: scores,
+  }
+  ws.send(JSON.stringify(bulkScoreData));
 
   const socketData: LinkData = {
     type: 'links',
@@ -76,31 +94,23 @@ wss.on('connection', (_ws, req) => {
 
       if (strike === 9) newGame();
 
+      const score = {
+        value: guess,
+        strike,
+        ball
+      };
+      scores.push(score);
       const result: ScoreData = {
         type: 'score',
-        data: {
-          value: guess,
-          strike,
-          ball 
-        }
+        data: score
       }
       const stringResult = JSON.stringify(result);
       sockets.forEach(v => v.send(stringResult));
     }
   });
 });
- 
-function newGame() {
-  game = [];
-  for (let i = 0; i < 9; i++) {
-    let num = Math.floor(Math.random() * 10);
-    while (game.includes(num)) num = Math.floor(Math.random() * 10);
-    game.push(num);
-  }
-
-  console.log(game);
-}
 
 server.listen(3000, '0.0.0.0', () => {
+  newGame();
   console.log('Server is running on http://localhost:3000');
-})
+});
