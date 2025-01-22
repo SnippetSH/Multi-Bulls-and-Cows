@@ -63,7 +63,7 @@
 </script>
 
 <div
-  class="absolute right-10 w-[10rem] h-[26rem] flex flex-col justify-center items-center"
+  class="absolute min-[1300px]:right-10 max-[1300px]:bottom-10 w-[10rem] h-[26rem] flex flex-col justify-center items-center"
 >
   <div class="font-bold text-sm">
     <p>Current Connecting: {currentUser}</p>
@@ -96,3 +96,18 @@
     </button>
   </div>
 </div>
+
+
+<style>
+  @media (min-width: 1300px) {
+    .min-\[1300px\]\:right-10 {
+      right: 2.5rem;
+    }
+  }
+
+  @media (max-width: 1300px) {
+    .max-\[1300px\]\:bottom-10 {
+      bottom: 2.5rem;
+    }
+  }
+</style>

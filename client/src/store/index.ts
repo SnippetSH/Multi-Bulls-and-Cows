@@ -8,7 +8,7 @@ export let gameResult = writable<ScoreData[]>([]);
 export let number5Clicked = writable<number>(0);
 export let cursor = writable<number>(0);
 
-export function initStore() {
+export function initStore(windowWidth: number) {
     const boxesTemp: Box[] = [];
     const padTemp: Box[] = [];
     for (let i = 1; i <= 9; i++) {
@@ -16,9 +16,12 @@ export function initStore() {
         boxesTemp.push({ id: i - 1, number: -1 });
     }
 
+    if (windowWidth < 400) {
+        padTemp.push({ id: 2308, number: -1});
+    }
     padTemp.push({ id: 0, number: 0, isClicked: false });
     padTemp.push({ id: 2307, number: -1 });
-
+    
     numberBoxes.set(boxesTemp);
     numberPads.set(padTemp);
     gameResult.set([]);

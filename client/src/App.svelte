@@ -32,9 +32,10 @@
   let socket: WebSocket;
   let currentUser: number = 0;
   let isWin: boolean = false;
+  let windowWidth: number = window.innerWidth;
 
   onMount(() => {
-    initStore();
+    initStore(windowWidth);
 
     socket = new WebSocket("ws://seungh.org:3000");
     socket.onopen = () => {
@@ -57,7 +58,7 @@
           
           setTimeout(() => {
             isWin = false;
-            initStore();
+            initStore(windowWidth);
           }, 1000) 
         }
       }
@@ -77,14 +78,22 @@
 </script>
 
 <div
-  class="pretendard bg-[#FFFAFA] w-screen h-screen flex flex-col justify-center gap-24 items-center relative"
+  class="pretendard bg-[#FFFAFA] w-screen h-screen flex flex-col mw-400 items-center relative"
 >
   {#if NewGameTrigger}
     <NewGame {socket} />
   {/if}
   <MainBox />
-  <NumberPad />
-  <Sidebar {socket} {currentUser}/>
+  <NumberPad {socket} />
+
+  {#if windowWidth > 400}
+    <Sidebar {socket} {currentUser}/>
+  {:else}
+    <div class="absolute bottom-16 w-[10rem] h-[5rem] flex flex-col justify-center items-center border-[1.4px] border-[#FFD1D1] rounded-lg">
+      기록지
+
+    </div>
+  {/if}
 
   <dialog 
     open={isWin} 
@@ -98,5 +107,20 @@
 <style>
   .disable {
     display: none;
+  }
+
+  @media (max-width: 400px) {
+    .mw-400 {
+      gap: 2rem;
+      justify-content: start;
+      margin-top: 3rem;
+    }
+  }
+
+  @media (min-width: 400px) {
+    .mw-400 {
+      gap: 6rem;
+      justify-content: center;
+    }
   }
 </style>
