@@ -4,14 +4,16 @@ interface Box {
     isClicked?: boolean,
 }
 
+interface InnerData {
+    id?: number,
+    value: string,
+    strike: number,
+    ball: number,
+}
+
 interface ScoreData {
     type: 'score';
-    data: {
-        id: number,
-        value: string,
-        strike: number,
-        ball: number,
-    };
+    data: InnerData;
 }
 
 interface LinkData {
@@ -21,7 +23,12 @@ interface LinkData {
     };
 }
 
-type ServerData = ScoreData | LinkData;
+interface BulkScoreData {
+    type: 'bulkscore';
+    data: InnerData[];
+  }
+  
+  type ServerData = ScoreData | LinkData | BulkScoreData;
 
 interface NewGameData {
     type: 'new_game';
@@ -39,4 +46,4 @@ interface GuessData {
   
 type ClientData = NewGameData | GuessData;
 
-export type { Box, ScoreData, ServerData, LinkData, NewGameData, GuessData };
+export type { Box, ScoreData, ServerData, LinkData, BulkScoreData, NewGameData, GuessData, InnerData, ClientData };

@@ -3,13 +3,13 @@
   import { gameResult, numberBoxes, number5Clicked, resetBox } from "../store";
     
   import type { GuessData, ScoreData, Box } from "../types";
-    import { get } from "svelte/store";
+  import { get } from "svelte/store";
 
   export let socket: WebSocket;
   export let currentUser: number;
   
   let boxes: Box[];
-  let datas: ScoreData[];
+  let datas: ScoreData[] = [];
   const boxesUnsubscribe = numberBoxes.subscribe(value => {
     boxes = value;
   })
@@ -27,10 +27,24 @@
 
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown);
+    const temp = [...datas];
+    // while(temp.length < 18) {
+    //   temp.push({
+    //     type: "score",
+    //     data: {
+    //       id: temp.length,
+    //       value: "0000"+temp.length,
+    //       strike: 0,
+    //       ball: 0
+    //     }
+    //   })
+    // }
+
+    datas = temp;
   })
 
   onDestroy(() => {
-    datasUnsubscribe();
+    // datasUnsubscribe();
     boxesUnsubscribe();
     window.removeEventListener('keydown', handleKeyDown);
   })
@@ -69,7 +83,7 @@
     <p>Current Connecting: {currentUser}</p>
   </div>
   <div
-    class="border-2 border-[#FFE5E5] rounded-lg w-full h-4/5 flex flex-col justify-center items-center"
+    class="border-2 border-[#FFE5E5] rounded-lg w-full h-4/5 flex flex-col justify-start items-start overflow-y-auto"
   >
     {#if datas.length !== 0}
       {#each datas as data (data.data.id)}
