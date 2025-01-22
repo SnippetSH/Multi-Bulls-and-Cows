@@ -22,7 +22,7 @@ interface Data {
   strike: number;
   ball: number;
 }
-
+  
 const wss = new ws.Server({ port: 80 });
 
 wss.on('connection', (_ws, req) => {
@@ -43,9 +43,14 @@ wss.on('connection', (_ws, req) => {
 
   ws.on('message', resp => {
     const value = resp.toString();
-    if (value === 'new_game:admin') {
-      game = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // TODO: make new list
-      return;
+    if (value.startsWith('new_game:')) {
+      console.log(value);
+      if (value === "new_game:admin") {
+        game = [1, 2, 3, 4, 5, 6, 7, 9, 8]; // todo: shuffle
+        return;
+      } else {
+        return;
+      }
     }
 
     if (value.length !== 9)
