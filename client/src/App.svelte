@@ -33,10 +33,13 @@
   let currentUser: number = 0;
   let isWin: boolean = false;
 
+  const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const host = window.location.host;
+
   onMount(() => {
     initStore();
 
-    socket = new WebSocket("ws://seungh.org:3000");
+    socket = new WebSocket(`${wsProtocol}://${host}`);
     socket.onopen = () => {
       console.log("Connected");
     };
