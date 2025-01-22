@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
   import { numberPads, numberBoxes } from "../store";
   
   import type { Box } from "../types";

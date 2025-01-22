@@ -6,10 +6,7 @@
   import { numberBoxes, numberPads, gameResult } from './store';
   
   import type { Box, Data } from './types';
-  import MainBox from './components/MainBox.svelte';
-  import NumberPad from './components/NumberPad.svelte';
-  import NewGame from './components/NewGame.svelte';
-    import Sidebar from './components/Sidebar.svelte';
+  import { NewGame, MainBox, NumberPad, Sidebar } from './components';
   
   let boxes: Box[];
   let pads: Box[];
