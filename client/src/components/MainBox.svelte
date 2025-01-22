@@ -1,16 +1,21 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { numberBoxes } from "../store";
+  import { numberBoxes, cursor } from "../store";
 
   import type { Box } from "../types";
   
   let boxes: Box[];
+  let currentCursor: number;
   const boxesUnsubscribe = numberBoxes.subscribe(value => {
     boxes = value;
+  })
+  const cursorUnsubscribe = cursor.subscribe(value => {
+    currentCursor = value;
   })
 
   onDestroy(() => {
     boxesUnsubscribe();
+    cursorUnsubscribe();
   })
 
   import { fade } from "svelte/transition";

@@ -2,14 +2,24 @@
   export let socket: WebSocket;
 
   import { fade } from "svelte/transition";
+  import type { NewGameData } from "../types";
+  import { number5Clicked } from "../store";
 
   let inputPassword = "";
   let isNewGameClicked = false;
 
   function onNewGame() {
     if(isNewGameClicked && inputPassword !== "") {
-      socket.send("new_game:"+inputPassword);
+
+      const data: NewGameData = {
+        type: 'new_game',
+        data: {
+          pw: inputPassword
+        }
+      };
+      socket.send(JSON.stringify(data));
       inputPassword="";
+      number5Clicked.set(0);
     }
     isNewGameClicked = !isNewGameClicked;
   }
