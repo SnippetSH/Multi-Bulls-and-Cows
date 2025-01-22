@@ -4,11 +4,39 @@ interface Box {
     isClicked?: boolean,
 }
 
-interface Data {
-    id: number,
-    value: string,
-    strike: number,
-    ball: number,
+interface ScoreData {
+    type: 'score';
+    data: {
+        id: number,
+        value: string,
+        strike: number,
+        ball: number,
+    };
 }
 
-export type { Box, Data };
+interface LinkData {
+    type: 'links';
+    data: {
+        links: number;
+    };
+}
+
+type ServerData = ScoreData | LinkData;
+
+interface NewGameData {
+    type: 'new_game';
+    data: {
+        pw: string;
+    }
+}
+  
+interface GuessData {
+    type: 'guess';
+    data: {
+        guess: string;
+    }
+}
+  
+type ClientData = NewGameData | GuessData;
+
+export type { Box, ScoreData, ServerData, LinkData, NewGameData, GuessData };

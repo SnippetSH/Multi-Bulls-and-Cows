@@ -1,71 +1,102 @@
 <script lang="ts">
   // 메인 색상 : #FFFAFA
-  // 버튼 색상 : #FFD1D1 
+  // 버튼 색상 : #FFD1D1
   // 외곽선 색상 : #FFE5E5
-  import { onDestroy, onMount } from 'svelte';
-  import { numberBoxes, numberPads, gameResult } from './store';
-  
-  import type { Box, Data } from './types';
-  import { NewGame, MainBox, NumberPad, Sidebar } from './components';
-  
+  import { onDestroy, onMount } from "svelte";
+  import { numberBoxes, numberPads, gameResult, number5Clicked, initStore } from "./store";
+
+  import type { Box, ScoreData, ServerData } from "./types";
+  import { NewGame, MainBox, NumberPad, Sidebar } from "./components";
+
   let boxes: Box[];
   let pads: Box[];
-  let datas: Data[];
-  const boxesUnsubscribe = numberBoxes.subscribe(value => {
+  let datas: ScoreData[];
+  let NewGameTrigger: boolean = false;
+  const numb5Unsubscribe = number5Clicked.subscribe((value) => {
+    if (value < 0) {
+      NewGameTrigger = true;
+    } else {
+      NewGameTrigger = false;
+    }
+  })
+  const boxesUnsubscribe = numberBoxes.subscribe((value) => {
     boxes = value;
-  })
-  const padsUnsubscribe = numberPads.subscribe(value => {
+  });
+  const padsUnsubscribe = numberPads.subscribe((value) => {
     pads = value;
-  })
-  const datasUnsubscribe = gameResult.subscribe(value => {
+  });
+  const datasUnsubscribe = gameResult.subscribe((value) => {
     datas = value;
-  })
-  
+  });
+
   let socket: WebSocket;
+  let currentUser: number = 0;
+  let isWin: boolean = false;
 
   onMount(() => {
-    const boxesTemp: Box[] = [];
-    const padTemp: Box[] = [];
-    for (let i = 1; i <= 9; i++) {
-      padTemp.push({ id: i, number: i, isClicked: false });
-      boxesTemp.push({ id: i-1, number: -1 });
-    } 
+    initStore();
 
-    padTemp.push({ id: 0, number: 0, isClicked: false});
-    padTemp.push({ id: 2307, number: -1});
-    numberBoxes.set(boxesTemp);
-    numberPads.set(padTemp);
-
-    socket = new WebSocket("ws://localhost");
+    socket = new WebSocket("ws://seungh.org:3000");
     socket.onopen = () => {
       console.log("Connected");
-    }
+    };
 
     socket.onmessage = (event) => {
-      const data: Data = JSON.parse(event.data);
-      console.log(data);
-      data.id = datas.length;
-      gameResult.set([...datas, data]);
-    }
+      const data: ServerData = JSON.parse(event.data);
+      // console.log(data);
+      if (!data) return;
 
-    return () => { 
+      if (data.type === "links") {
+        currentUser = data.data.links;
+      } else if (data.type === "score") {
+        data.data.id = datas.length;
+        gameResult.set([...datas, data]);
+
+        if (data.data.strike === 9) {
+          isWin = true;
+          
+          setTimeout(() => {
+            isWin = false;
+            initStore();
+          }, 1000) 
+        }
+      }
+    };
+
+    return () => {
       socket.close();
-    }
+    };
   });
 
   onDestroy(() => {
     boxesUnsubscribe();
     padsUnsubscribe();
     datasUnsubscribe();
-  })
-  
-  
-  
+    numb5Unsubscribe();
+  });
 </script>
 
-<div class="pretendard bg-[#FFFAFA] w-screen h-screen flex flex-col justify-center gap-24 items-center relative">
-  <NewGame {socket} />
+<div
+  class="pretendard bg-[#FFFAFA] w-screen h-screen flex flex-col justify-center gap-24 items-center relative"
+>
+  {#if NewGameTrigger}
+    <NewGame {socket} />
+  {/if}
   <MainBox />
   <NumberPad />
-  <Sidebar {socket} />
+  <Sidebar {socket} {currentUser}/>
+
+  <dialog 
+    open={isWin} 
+    class="font-bold text-3xl text-center w-screen h-screen bg-[#FFFAFA] flex justify-center items-center rounded-lg"
+    class:disable={!isWin}
+  >
+    <p>You Win!</p>
+  </dialog>
 </div>
+
+<style>
+  .disable {
+    display: none;
+  }
+</style>

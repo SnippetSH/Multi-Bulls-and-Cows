@@ -1,8 +1,14 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import { numberPads, numberBoxes } from "../store";
+  import { onDestroy, onMount } from "svelte";
+  import { get } from "svelte/store";
+  import { numberPads, numberBoxes, number5Clicked, cursor } from "../store";
   
   import type { Box } from "../types";
+  
+  let currentCursor: number;
+  const cursorUnsubscribe = cursor.subscribe(value => {
+    currentCursor = value;
+  })
 
   let pads: Box[], boxes: Box[];
   const boxesUnsubscribe = numberBoxes.subscribe(value => {
@@ -12,15 +18,16 @@
     pads = value;
   })
 
-  onDestroy(() => {
-    boxesUnsubscribe();
-    padsUnsubscribe();
-  });
-
-  let currentCursor = 0;
-
   function onClickPad(pad: Box) {
     const temp = [...boxes];
+
+    currentCursor = get(cursor);
+    // console.log(currentCursor);
+    if(pad.number === 5) {
+      number5Clicked.update(value => value+1);
+      console.log(get(number5Clicked));
+    }
+
     if (currentCursor < 9 && !pad.isClicked) {
       pad.isClicked = true;
       const tempPad = [...pads];
@@ -32,11 +39,14 @@
     }
 
     numberBoxes.set(temp);
+    cursor.set(currentCursor);
   }
 
   function onDelPad() {
     const temp = [...boxes];
     const tempPad = [...pads];
+
+    currentCursor = get(cursor);
     if (currentCursor > 0) {
       tempPad.forEach(pad => {
         if (pad.number === temp[currentCursor-1].number) {
@@ -49,7 +59,32 @@
 
     numberPads.set(tempPad);
     numberBoxes.set(temp);
+    cursor.set(currentCursor);
   }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    // console.log(e.key);
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      onDelPad();
+      return;
+    }
+    let pressedKey = Number(e.key);
+    const pad = pads.find(pad => pad.number === pressedKey);
+    if (pad) onClickPad(pad);
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+  })
+
+  onDestroy(() => {
+    boxesUnsubscribe();
+    padsUnsubscribe();
+    cursorUnsubscribe();
+
+    window.removeEventListener('keydown', handleKeyDown);
+  });
 </script>
 
 <div class="number-pad-grid">

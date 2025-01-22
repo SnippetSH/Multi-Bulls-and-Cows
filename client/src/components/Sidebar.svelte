@@ -1,13 +1,15 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import { gameResult, numberBoxes } from "../store";
+  import { onDestroy, onMount } from "svelte";
+  import { gameResult, numberBoxes, number5Clicked, resetBox } from "../store";
     
-  import type { Data, Box } from "../types";
+  import type { GuessData, ScoreData, Box } from "../types";
+    import { get } from "svelte/store";
 
   export let socket: WebSocket;
+  export let currentUser: number;
   
   let boxes: Box[];
-  let datas: Data[];
+  let datas: ScoreData[];
   const boxesUnsubscribe = numberBoxes.subscribe(value => {
     boxes = value;
   })
@@ -15,12 +17,31 @@
     datas = value;
   })
 
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSend();
+      return;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+  })
+
   onDestroy(() => {
     datasUnsubscribe();
     boxesUnsubscribe();
+    window.removeEventListener('keydown', handleKeyDown);
   })
 
   function onSend() {
+    if (get(number5Clicked) === 5) {
+      number5Clicked.set(-1);
+    } else {
+      number5Clicked.set(0);
+    }
+
     if (socket.readyState === WebSocket.OPEN) {
       const boxNumbers = boxes.map(box => box.number);
       
@@ -28,28 +49,38 @@
         return;
       }
 
-      const sendValue = boxNumbers.join("");
-      socket.send(sendValue);
+      const data: GuessData = {
+        type: 'guess',
+        data: {
+          guess: boxNumbers.join("")
+        }
+      };
+      socket.send(JSON.stringify(data));
+
+      resetBox();
     }
   }
 </script>
 
 <div
-  class="absolute right-10 w-40 h-96 flex flex-col justify-center items-center"
+  class="absolute right-10 w-[10rem] h-[26rem] flex flex-col justify-center items-center"
 >
+  <div class="font-bold text-sm">
+    <p>Current Connecting: {currentUser}</p>
+  </div>
   <div
-    class="border-2 border-[#FFE5E5] rounded-lg w-40 h-80 flex flex-col justify-center items-center"
+    class="border-2 border-[#FFE5E5] rounded-lg w-full h-4/5 flex flex-col justify-center items-center"
   >
     {#if datas.length !== 0}
-      {#each datas as data (data.id)}
+      {#each datas as data (data.data.id)}
         <div
           class="w-full h-10 flex justify-center items-center border-b-2 border-[#FFE5E5]"
         >
           <p class="text-sm font-bold text-center text-[#918282]">
-            {data.value}:&nbsp&nbsp
+            {data.data.value}:&nbsp&nbsp
           </p>
           <p class="text-base font-bold text-center">
-            {data.strike}S {data.ball ? data.ball : 0}B
+            {data.data.strike}S {data.data.ball ? data.data.ball : 0}B
           </p>
         </div>
       {/each}
