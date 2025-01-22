@@ -7,6 +7,7 @@
 
   import type { Box, ScoreData, ServerData } from "./types";
   import { NewGame, MainBox, NumberPad, Sidebar } from "./components";
+  import githubPng from "./assets/github_logo.png";
 
   let boxes: Box[];
   let pads: Box[];
@@ -32,6 +33,7 @@
   let socket: WebSocket;
   let currentUser: number = 0;
   let isWin: boolean = false;
+  let winNumber: string = "";
 
   const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
   const host = window.location.host;
@@ -62,6 +64,7 @@
   
           if (data.data.strike === 9) {
             isWin = true;
+            winNumber = data.data.value;
             
             setTimeout(() => {
               isWin = false;
@@ -100,11 +103,21 @@
 
   <dialog 
     open={isWin} 
-    class="font-bold text-3xl text-center w-screen h-screen bg-[#FFFAFA] flex justify-center items-center rounded-lg"
+    class="font-bold text-3xl text-center w-screen h-screen bg-[#FFFAFA] flex flex-col justify-center items-center rounded-lg"
     class:disable={!isWin}
   >
     <p>You Win!</p>
+    
+    <p>Answer: {winNumber}</p>
   </dialog>
+
+  <div id="logo" class="absolute top-3 right-3 flex items-center gap-2">
+    <a href="https://github.com/SnippetSH/Multi-Bulls-and-Cows" class="flex items-center gap-2">
+      <img src={githubPng} alt="logo" class="w-10 h-10" />
+      <p>Bulls & Cows</p>
+    </a>
+    
+  </div>
 </div>
 
 <style>

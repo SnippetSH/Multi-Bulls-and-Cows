@@ -7,8 +7,10 @@ import cors from 'cors';
 import type { ScoreData, LinkData, BulkScoreData, ClientData, InnerData } from './types';
 
 let game = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+let gameResults: InnerData[] = [];
 function newGame() {
   game = [];
+  gameResults = [];
   for (let i = 0; i < 9; i++) {
     let num = Math.floor(Math.random() * 10);
     while (game.includes(num)) num = Math.floor(Math.random() * 10);
@@ -18,7 +20,6 @@ function newGame() {
   console.log(game);
 }
 
-let scores: InnerData[] = [];
 let sockets: Array<ws & { id: string | undefined }> = [];
 
 const app = express();
@@ -49,7 +50,7 @@ wss.on('connection', (_ws, req) => {
   console.log(game);
   const bulkScoreData: BulkScoreData = {
     type: 'bulkscore',
-    data: scores,
+    data: gameResults,
   }
   ws.send(JSON.stringify(bulkScoreData));
 
@@ -92,14 +93,15 @@ wss.on('connection', (_ws, req) => {
         else if (game.includes(Number(guess[i]))) ball++;
       }
 
-      if (strike === 9) newGame();
-
       const score = {
         value: guess,
         strike,
         ball
       };
-      scores.push(score);
+      gameResults.push(score);
+
+      if (strike === 9) newGame();
+
       const result: ScoreData = {
         type: 'score',
         data: score
